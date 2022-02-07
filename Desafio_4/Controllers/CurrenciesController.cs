@@ -22,26 +22,23 @@ namespace Desafio_4.Controllers
         {
             this.MLClient = clientFactory.CreateClient("MLClient");
         }
-
+                
         [HttpGet]
         public async Task<ActionResult> GetCurrencies()
         {
             var currenciesResult = await MLClient.GetAsync("currencies");
             List<Currency> currencies = new List<Currency>();
 
-            var directory = $"{Directory.GetCurrentDirectory()}/files/{DateTime.Now.ToString("ddMMyyyy_hhmmss")}";
-            
+            var now = DateTime.Now;
+            var actualDirectory = $"{Directory.GetCurrentDirectory()}/files/{now.ToString("ddMMyyyy_hhmmss")}";
+            if (!Directory.Exists(actualDirectory))
+                Directory.CreateDirectory(actualDirectory);
 
             if (currenciesResult.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var json = await currenciesResult.Content.ReadAsStringAsync();
-
-                if (!Directory.Exists(directory))
-                    Directory.CreateDirectory(directory);
-
-                System.IO.File.WriteAllText($"{directory}/currencies_{DateTime.Now.ToString("ddMMyyyy_HHmmss")}.json", json);
-
                 currencies = JsonConvert.DeserializeObject<List<Currency>>(json);
+                SaveCurrencies(json, actualDirectory);
             }
 
             foreach (var currency in currencies)
@@ -53,6 +50,18 @@ namespace Desafio_4.Controllers
                     currency.Todolar = toDolar;
                 }
             }
+            GenerateAndSaveCSV(currencies, actualDirectory);
+
+            return Ok(currencies);
+        }
+
+        private void SaveCurrencies(string json, string directory)
+        {
+            System.IO.File.WriteAllText($"{directory}/currencies_{DateTime.Now.ToString("ddMMyyyy_HHmmss")}.json", json);
+        }
+
+        private void GenerateAndSaveCSV(IList<Currency> currencies, string directory)
+        {
 
             using (var textWriter = new StreamWriter($"{directory}/currency_conversions_{DateTime.Now.ToString("ddMMyyyy_HHmmss")}.csv"))
             {
@@ -69,9 +78,6 @@ namespace Desafio_4.Controllers
                 }
                 writer.NextRecord();
             }
-
-            return Ok(currencies);
-
         }
     }
 }

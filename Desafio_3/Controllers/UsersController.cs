@@ -22,18 +22,29 @@ namespace Desafio_3.Controllers
         public async Task<ActionResult<List<User>>> GetUsers()
         {
             var userList = dbContext.Users.ToList();
-
             return Ok(userList);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<List<User>>> GetUsers([FromRoute] int id)
+        {
+            var user = dbContext.Users.Find(id);
+            if (user == null)
+                return BadRequest("El usuario indicado no existe");
+
+            return Ok(user);
         }
 
         [HttpPost]
         public async Task<ActionResult> AddUser([FromBody]User newUser)
         {
             if (newUser == null)
-                return BadRequest("Usuario nulo");
+                return BadRequest("No ha ingresado un usuario válido");
+
             dbContext.Add(newUser);
             await dbContext.SaveChangesAsync();
-            return Ok();
+
+            return Ok("Usuario creado con éxito");
         }
 
         [HttpPut("{id}")]
@@ -47,6 +58,8 @@ namespace Desafio_3.Controllers
             {
                 return BadRequest("El usuario no existe");
             }
+
+            #region Update User
             if (newUser.Name != null)
                 userInDb.Name = newUser.Name;
             if(newUser.LastName != null)
@@ -55,9 +68,10 @@ namespace Desafio_3.Controllers
                 userInDb.Email = newUser.Email;
             if (newUser.Password != null)
                 userInDb.Password = newUser.Password;
+            #endregion
 
             await dbContext.SaveChangesAsync();
-            return Ok();
+            return Ok("Usuario actualizado con éxito");
         }
 
         [HttpDelete("{id}")]
@@ -73,7 +87,7 @@ namespace Desafio_3.Controllers
             dbContext.Remove(userInDb);
 
             await dbContext.SaveChangesAsync();
-            return Ok();
+            return Ok("Usuario eliminado con éxito");
         }
     }
 }

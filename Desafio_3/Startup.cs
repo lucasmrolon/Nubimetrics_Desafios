@@ -37,7 +37,7 @@ namespace Desafio_3
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Desafio3 WebApi", Version = "v1", Description = "ABM Users in SQLServer" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Desafio3 WebApi", Version = "v1", Description = "ABM de Usuarios sobre SQLServer" });
 
             });
 
